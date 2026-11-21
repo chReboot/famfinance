@@ -11,6 +11,7 @@ DB = "/data/finance.db"
 os.makedirs("/data", exist_ok=True)
 
 con = sqlite3.connect(DB)
+
 con.execute("""
 CREATE TABLE IF NOT EXISTS transactions (
     hash TEXT PRIMARY KEY,
@@ -20,6 +21,7 @@ CREATE TABLE IF NOT EXISTS transactions (
     category TEXT
 )
 """)
+
 con.close()
 
 
@@ -41,13 +43,36 @@ def idx():
 
     if request.method == "POST":
 
-        f = request.files["file"]
+        f = request.files.get("file")
 
-        df = pd.read_csv(
-            f,
-            sep=";",
-            encoding="cp1252"
-        )
+        if not f:
+            return redirect("/")
+
+        if f.filename == "":
+            return redirect("/")
+
+        try:
+
+            df = pd.read_csv(
+                f,
+                sep=";",
+                encoding="cp1252"
+            )
+
+        except pd.errors.EmptyDataError:
+
+            print("Leere CSV-Datei")
+
+            return redirect("/")
+
+        except Exception as ex:
+
+            print(f"CSV Fehler: {ex}")
+
+            return redirect("/")
+
+        print(df.columns.tolist())
+        print(f"Datensätze: {len(df)}")
 
         con = sqlite3.connect(DB)
 
@@ -78,11 +103,11 @@ def idx():
                         date,
                         payee,
                         float(amount.replace(",", ".")),
-                        cat(payee),
+                        cat(payee)
                     )
                 )
 
-            except:
+            except Exception:
                 pass
 
         con.commit()
@@ -135,6 +160,7 @@ def transactions():
         search=""
     )
 
+
 @app.route("/categories")
 def categories():
 
@@ -156,6 +182,7 @@ def categories():
         "categories.html",
         categories=rows
     )
+
 
 @app.route("/statistics")
 def statistics():
@@ -179,6 +206,7 @@ def statistics():
         labels=[r[0] for r in rows],
         values=[r[1] for r in rows]
     )
+
 
 app.run(
     host="0.0.0.0",
