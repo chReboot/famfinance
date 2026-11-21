@@ -1,3 +1,18 @@
+from flask import Flask, render_template, request, redirect
+import sqlite3, hashlib, pandas as pd, os
+
+app = Flask(__name__)
+
+DB = '/data/finance.db'
+
+os.makedirs('/data', exist_ok=True)
+
+con = sqlite3.connect(DB)
+con.execute(
+    'create table if not exists transactions(hash text primary key,date text,payee text,amount real,category text)'
+)
+con.close()
+
 @app.route('/', methods=['GET', 'POST'])
 def idx():
 
