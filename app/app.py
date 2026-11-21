@@ -31,7 +31,24 @@ def idx():
    except: pass
   con.commit(); con.close()
   return redirect('/')
- con=sqlite3.connect(DB)
- rows=con.execute('select count(*),coalesce(sum(amount),0) from transactions').fetchone(); con.close()
- return render_template('index.html',count=rows[0],summe=rows[1])
+ con = sqlite3.connect(DB)
+
+stats = con.execute("""
+    SELECT
+        COUNT(*),
+        COALESCE(SUM(amount),0),
+        COALESCE(SUM(CASE WHEN amount > 0 THEN amount END),0),
+        COALESCE(SUM(CASE WHEN amount < 0 THEN amount END),0)
+    FROM transactions
+""").fetchone()
+
+con.close()
+
+return render_template(
+    "index.html",
+    bookings=stats[0],
+    balance=stats[1],
+    income=stats[2],
+    expenses=stats[3]
+)
 app.run(host='0.0.0.0',port=5000)
