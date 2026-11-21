@@ -135,6 +135,50 @@ def transactions():
         search=""
     )
 
+@app.route("/categories")
+def categories():
+
+    con = sqlite3.connect(DB)
+
+    rows = con.execute("""
+        SELECT
+            category,
+            COUNT(*),
+            ROUND(SUM(amount), 2)
+        FROM transactions
+        GROUP BY category
+        ORDER BY SUM(amount)
+    """).fetchall()
+
+    con.close()
+
+    return render_template(
+        "categories.html",
+        categories=rows
+    )
+
+@app.route("/statistics")
+def statistics():
+
+    con = sqlite3.connect(DB)
+
+    rows = con.execute("""
+        SELECT
+            category,
+            ABS(SUM(amount))
+        FROM transactions
+        WHERE amount < 0
+        GROUP BY category
+        ORDER BY ABS(SUM(amount)) DESC
+    """).fetchall()
+
+    con.close()
+
+    return render_template(
+        "statistics.html",
+        labels=[r[0] for r in rows],
+        values=[r[1] for r in rows]
+    )
 
 app.run(
     host="0.0.0.0",
