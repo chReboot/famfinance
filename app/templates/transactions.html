@@ -19,10 +19,6 @@
 
     <h1>Buchungen</h1>
 
-    <a href="/">
-        Dashboard
-    </a>
-
     <hr>
 
     <form>
@@ -63,6 +59,18 @@
 
                 <td>
 
-                    {% if tx[2] > 0 %}
+                {% if tx[2] > 0 %}
 
-                        <span class="
+                    <span class="text-success fw-bold">
+                        {{ "%.2f"|format(tx[2]) }} €
+                    </span>
+
+                {% else %}
+
+                    <span class="text-danger fw-bold">
+                        {{ "%.2f"|format(tx[2]) }} €
+                    </span>
+
+                {% endif %}
+
+                </td>
