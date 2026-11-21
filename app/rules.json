@@ -1,0 +1,53 @@
+{
+  "Lebensmittel": [
+    "REWE",
+    "EDEKA",
+    "ALDI",
+    "LIDL",
+    "NETTO",
+    "PENNY",
+    "NORMA",
+    "KAUFLAND",
+    "VINZENZ MURR",
+    "WEKO Rosenheim/Am Gittersbach 1/Rosenheim/DE"
+  ],
+
+  "Shopping": [
+    "AMAZON",
+    "EBAY",
+    "OTTO"
+  ],
+
+  "Auto": [
+    "ARAL",
+    "SHELL",
+    "ESSO"
+  ],
+
+  "Abos": [
+    "NETFLIX",
+    "SPOTIFY",
+    "DISNEY"
+  ],
+
+  "Kommunikation": [
+    "VODAFONE",
+    "TELEKOM",
+    "O2"
+  ],
+
+  "Versicherung": [
+    "ALLIANZ",
+    "HUK",
+    "DEVK",
+    "Muenchener VEREIN"
+  ],
+
+  "Arbeitgeber": [
+    "AUTO EDER"
+  ],
+  
+  "Sonstiges": [
+    "IdentityCheck"
+  ]
+}

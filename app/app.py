@@ -3,10 +3,12 @@ import sqlite3
 import hashlib
 import pandas as pd
 import os
+import json
 
 app = Flask(__name__)
 
 DB = "/data/finance.db"
+
 
 os.makedirs("/data", exist_ok=True)
 
@@ -25,15 +27,19 @@ CREATE TABLE IF NOT EXISTS transactions (
 con.close()
 
 
-def cat(payee):
+def categorize(payee):
 
-    p = (payee or "").upper()
+    p = str(payee).upper()
 
-    if "REWE" in p or "EDEKA" in p:
-        return "Lebensmittel"
+    with open("rules.json", encoding="utf-8") as f:
+        rules = json.load(f)
 
-    if "AMAZON" in p:
-        return "Shopping"
+    for category, keywords in rules.items():
+
+        for keyword in keywords:
+
+            if keyword.upper() in p:
+                return category
 
     return "Unkategorisiert"
 
@@ -62,13 +68,11 @@ def idx():
         except pd.errors.EmptyDataError:
 
             print("Leere CSV-Datei")
-
             return redirect("/")
 
         except Exception as ex:
 
             print(f"CSV Fehler: {ex}")
-
             return redirect("/")
 
         print(df.columns.tolist())
@@ -103,7 +107,7 @@ def idx():
                         date,
                         payee,
                         float(amount.replace(",", ".")),
-                        cat(payee)
+                        categorize(payee)
                     )
                 )
 
@@ -189,24 +193,80 @@ def statistics():
 
     con = sqlite3.connect(DB)
 
-    rows = con.execute("""
+    expense_rows = con.execute("""
         SELECT
             category,
-            ABS(SUM(amount))
+            ROUND(ABS(SUM(amount)), 2)
         FROM transactions
         WHERE amount < 0
         GROUP BY category
         ORDER BY ABS(SUM(amount)) DESC
     """).fetchall()
 
+    income_rows = con.execute("""
+        SELECT
+            category,
+            ROUND(SUM(amount), 2)
+        FROM transactions
+        WHERE amount > 0
+        GROUP BY category
+        ORDER BY SUM(amount) DESC
+    """).fetchall()
+
     con.close()
+
+    expense_labels = [r[0] for r in expense_rows]
+    expense_values = [r[1] for r in expense_rows]
+
+    income_labels = [r[0] for r in income_rows]
+    income_values = [r[1] for r in income_rows]
 
     return render_template(
         "statistics.html",
-        labels=[r[0] for r in rows],
-        values=[r[1] for r in rows]
+
+        expense_labels=expense_labels,
+        expense_values=expense_values,
+
+        income_labels=income_labels,
+        income_values=income_values
     )
 
+@app.route("/recategorize")
+def recategorize():
+
+    con = sqlite3.connect(DB)
+
+    rows = con.execute("""
+        SELECT hash, payee
+        FROM transactions
+    """).fetchall()
+
+    updated = 0
+
+    for row in rows:
+
+        tx_hash = row[0]
+        payee = row[1]
+
+        category = categorize(payee)
+
+        con.execute("""
+            UPDATE transactions
+            SET category = ?
+            WHERE hash = ?
+        """, (
+            category,
+            tx_hash
+        ))
+
+        updated += 1
+
+    con.commit()
+    con.close()
+
+    print(f"{updated} Buchungen neu kategorisiert")
+
+    return redirect("/categories")
 
 app.run(
     host="0.0.0.0",
