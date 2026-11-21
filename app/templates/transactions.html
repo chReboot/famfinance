@@ -2,7 +2,6 @@
 <html>
 
 <head>
-
     <meta charset="utf-8">
 
     <link
@@ -10,25 +9,22 @@
         rel="stylesheet">
 
     <title>Buchungen</title>
-
 </head>
 
 <body>
+
 {% include 'navbar.html' %}
+
 <div class="container mt-4">
 
     <h1>Buchungen</h1>
 
-    <hr>
-
     <form>
-
         <input
             class="form-control"
             name="q"
             value="{{ search }}"
-            placeholder="Suche nach Empfänger oder Verwendungszweck">
-
+            placeholder="Suche...">
     </form>
 
     <br>
@@ -36,15 +32,12 @@
     <table class="table table-striped">
 
         <thead>
-
             <tr>
                 <th>Datum</th>
                 <th>Empfänger</th>
                 <th>Betrag</th>
                 <th>Kategorie</th>
-                <th>Verwendungszweck</th>
             </tr>
-
         </thead>
 
         <tbody>
@@ -59,18 +52,34 @@
 
                 <td>
 
-                {% if tx[2] > 0 %}
+                    {% if tx[2] > 0 %}
 
-                    <span class="text-success fw-bold">
-                        {{ "%.2f"|format(tx[2]) }} €
-                    </span>
+                        <span class="text-success fw-bold">
+                            {{ "%.2f"|format(tx[2]) }} €
+                        </span>
 
-                {% else %}
+                    {% else %}
 
-                    <span class="text-danger fw-bold">
-                        {{ "%.2f"|format(tx[2]) }} €
-                    </span>
+                        <span class="text-danger fw-bold">
+                            {{ "%.2f"|format(tx[2]) }} €
+                        </span>
 
-                {% endif %}
+                    {% endif %}
 
                 </td>
+
+                <td>{{ tx[3] }}</td>
+
+            </tr>
+
+        {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+</body>
+
+</html>
