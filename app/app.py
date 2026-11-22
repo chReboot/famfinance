@@ -140,6 +140,69 @@ def idx():
         expenses=stats[3]
     )
 
+@app.route("/rules")
+def rules():
+
+    with open("rules.json", encoding="utf-8") as f:
+        rules = json.load(f)
+
+    return render_template(
+        "rules.html",
+        rules=rules
+    )
+
+@app.route("/rules/add", methods=["POST"])
+def rules_add():
+
+    category = request.form.get("category", "").strip()
+    keyword = request.form.get("keyword", "").strip().upper()
+
+    if not category or not keyword:
+        return redirect("/rules")
+
+    with open("rules.json", "r", encoding="utf-8") as f:
+        rules = json.load(f)
+
+    if category not in rules:
+        rules[category] = []
+
+    if keyword not in rules[category]:
+        rules[category].append(keyword)
+
+    rules[category] = sorted(rules[category])
+
+    with open("rules.json", "w", encoding="utf-8") as f:
+        json.dump(
+            rules,
+            f,
+            indent=2,
+            ensure_ascii=False
+        )
+
+    return redirect("/rules")
+
+@app.route("/transaction/update_category", methods=["POST"])
+def update_category():
+
+    tx_hash = request.form.get("hash")
+    category = request.form.get("category")
+
+    con = sqlite3.connect(DB)
+
+    con.execute("""
+        UPDATE transactions
+        SET category = ?
+        WHERE hash = ?
+    """, (
+        category,
+        tx_hash
+    ))
+
+    con.commit()
+    con.close()
+
+    return redirect("/transactions")
+
 
 @app.route("/transactions")
 def transactions():
@@ -148,6 +211,7 @@ def transactions():
 
     rows = con.execute("""
         SELECT
+            hash,
             date,
             payee,
             amount,
@@ -158,12 +222,98 @@ def transactions():
 
     con.close()
 
+    with open("rules.json", encoding="utf-8") as f:
+        rules = json.load(f)
+
+    categories = sorted(rules.keys())
+
+    if "Unkategorisiert" not in categories:
+        categories.append("Unkategorisiert")
+        
     return render_template(
         "transactions.html",
         transactions=rows,
-        search=""
+        search="",
+        categories=categories
     )
 
+
+@app.route("/rules/delete")
+def rules_delete():
+
+    category = request.args.get("category")
+    keyword = request.args.get("keyword")
+
+    with open("rules.json", "r", encoding="utf-8") as f:
+        rules = json.load(f)
+
+    if category in rules:
+
+        if keyword in rulesrules[category].remove(keyword)
+
+            if len(rules[category]) == 0:
+                del rules[category]
+
+    with open("rules.json", "w", encoding="utf-8") as f:
+
+        json.dump(
+            rules,
+            f,
+            indent=2,
+            ensure_ascii=False
+        )
+
+    return redirect("/rules")
+
+@app.route("/rules/edit")
+def rules_edit():
+
+    category = request.args.get("category")
+    keyword = request.args.get("keyword")
+
+    return render_template(
+        "rule_edit.html",
+        category=category,
+        keyword=keyword
+    )
+
+@app.route("/rules/update", methods=["POST"])
+def rules_update():
+
+    old_category = request.form["old_category"]
+    old_keyword = request.form["old_keyword"]
+
+    new_category = request.form["category"]
+    new_keyword = request.form["keyword"].upper()
+
+    with open("rules.json", encoding="utf-8") as f:
+        rules = json.load(f)
+
+    if old_category in rules:
+
+        if old_keyword in rules[old_category]:
+
+            rules[old_category].remove(old_keyword)
+
+    if len(rules.get(old_category, [])) == 0:
+
+        rules.pop(old_category, None)
+
+    if new_category not in rules:
+
+        rules[new_category] = []
+
+    if new_keyword not in rules[new_category]:
+
+        rules[new_category].append(new_keyword)
+
+    with open("rules.json", "w", encoding
+            f,
+            indent=2,
+            ensure_ascii=False
+        )
+
+    return redirect("/rules")
 
 @app.route("/categories")
 def categories():

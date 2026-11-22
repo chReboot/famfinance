@@ -23,19 +23,19 @@
 
     <h1>Statistiken</h1>
 
-    <div class="row">
+    <div class="row mb-4">
 
-        <div class="col-lg-6">
+        <div class="col-md-6">
 
             <div class="card">
 
                 <div class="card-header">
-                    Ausgaben nach Kategorien
+                    📉 Ausgaben nach Kategorien
                 </div>
 
                 <div class="card-body">
 
-                    <canvas id="categoryChart"></canvas>
+                    <canvas id="expenseChart"></canvas>
 
                 </div>
 
@@ -43,12 +43,34 @@
 
         </div>
 
-        <div class="col-lg-6">
+        <div class="col-md-6">
 
             <div class="card">
 
                 <div class="card-header">
-                    Kategorien Übersicht
+                    📈 Einnahmen nach Kategorien
+                </div>
+
+                <div class="card-body">
+
+                    <canvas id="incomeChart"></canvas>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="row">
+
+        <div class="col-md-6">
+
+            <div class="card">
+
+                <div class="card-header">
+                    Ausgaben Übersicht
                 </div>
 
                 <div class="card-body">
@@ -64,18 +86,51 @@
 
                         <tbody>
 
-                        {% for i in range(labels|length) %}
+                        {% for i in range(expense_labels|length) %}
 
                             <tr>
+                                <td>{{ expense_labels[i] }}</td>
+                                <td>{{ expense_values[i] }} €</td>
+                            </tr>
 
-                                <td>
-                                    {{ labels[i] }}
-                                </td>
+                        {% endfor %}
 
-                                <td>
-                                    {{ values[i] }} €
-                                </td>
+                        </tbody>
 
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-6">
+
+            <div class="card">
+
+                <div class="card-header">
+                    Einnahmen Übersicht
+                </div>
+
+                <div class="card-body">
+
+                    <table class="table table-striped">
+
+                        <thead>
+                            <tr>
+                                <th>Kategorie</th>
+                                <th>Betrag</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                        {% for i in range(income_labels|length) %}
+
+                            <tr>
+                                <td>{{ income_labels[i] }}</td>
+                                <td>{{ income_values[i] }} €</td>
                             </tr>
 
                         {% endfor %}
@@ -96,53 +151,33 @@
 
 <script>
 
-const ctx = document.getElementById('categoryChart');
-
-new Chart(ctx, {
-
-    type: 'doughnut',
-
-    data: {
-
-        labels: {{ labels|tojson }},
-
-        datasets: [{
-
-            data: {{ values|tojson }},
-
-            backgroundColor: [
-                '#0d6efd',
-                '#198754',
-                '#dc3545',
-                '#ffc107',
-                '#6f42c1',
-                '#20c997',
-                '#fd7e14',
-                '#6610f2'
-            ]
-
-        }]
-
-    },
-
-    options: {
-
-        responsive: true,
-
-        plugins: {
-
-            legend: {
-                position: 'bottom'
-            }
-
+new Chart(
+    document.getElementById("expenseChart"),
+    {
+        type: "doughnut",
+        data: {
+            labels: {{ expense_labels|tojson }},
+            datasets: [{
+                data: {{ expense_values|tojson }}
+            }]
         }
-
     }
+);
 
-});
+new Chart(
+    document.getElementById("incomeChart"),
+    {
+        type: "doughnut",
+        data: {
+            labels: {{ income_labels|tojson }},
+            datasets: [{
+                data: {{ income_values|tojson }}
+            }]
+        }
+    }
+);
 
 </script>
 
 </body>
-
 </html>
